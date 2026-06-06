@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>冷笑 vs 熱笑 診断テスト</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --purple-50:#EEEDFE;--purple-200:#AFA9EC;--purple-400:#7F77DD;
+      --purple-600:#534AB7;--purple-800:#3C3489;--purple-900:#26215C;
+      --pink-50:#FBEAF0;--pink-200:#ED93B1;--pink-400:#D4537E;
+      --pink-600:#993556;--pink-800:#72243E;
+      --gray-50:#F8F7F4;--gray-100:#F1EFE8;--gray-200:#D3D1C7;
+      --gray-400:#888780;--gray-600:#5F5E5A;
+      --text-primary:#1a1a1a;--text-secondary:#666;--text-tertiary:#999;
+      --border:rgba(0,0,0,0.1);--radius-md:12px;--radius-lg:18px;--radius-xl:24px;
+    }
+    body { font-family:'Zen Maru Gothic',sans-serif; background:var(--gray-50); color:var(--text-primary); min-height:100vh; line-height:1.6; }
+    .page { max-width:680px; margin:0 auto; padding:1.5rem 1rem; }
+    .screen { display:none; }
+    .screen.active { display:block; }
+
+    /* AD */
+    .ad-slot { width:100%; margin:1rem auto; min-height:90px; background:var(--gray-100); border:1px dashed var(--gray-200); border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; color:var(--text-tertiary); font-size:12px; }
+    .ad-slot-rect { min-height:200px; }
+
+    /* TITLE */
+    .title-screen { text-align:center; padding:2rem 0 3rem; }
+    .title-badge { display:inline-block; font-size:11px; font-weight:700; letter-spacing:.15em; padding:4px 16px; border-radius:20px; background:var(--purple-50); color:var(--purple-600); margin-bottom:1.5rem; }
+    h1.title-main { font-size:clamp(2rem,6vw,2.8rem); font-weight:900; line-height:1.2; margin-bottom:.75rem; }
+    .title-main span.cool { color:var(--purple-600); }
+    .title-main span.hot { color:var(--pink-400); }
+    .title-sub { font-size:.95rem; color:var(--text-secondary); margin-bottom:2.5rem; line-height:1.7; }
+    .mascot-row { display:flex; justify-content:center; gap:2.5rem; margin-bottom:2.5rem; }
+    .mascot-preview { display:flex; flex-direction:column; align-items:center; gap:.5rem; }
+    .mascot-preview span { font-size:12px; font-weight:700; color:var(--text-secondary); }
+    .start-btn { display:inline-block; padding:1rem 3.5rem; font-size:1.1rem; font-weight:900; font-family:'Zen Maru Gothic',sans-serif; border-radius:50px; border:none; cursor:pointer; background:linear-gradient(135deg,var(--purple-800),var(--purple-600)); color:white; transition:transform .15s,box-shadow .15s; box-shadow:0 6px 24px rgba(83,74,183,.35); letter-spacing:.05em; }
+    .start-btn:hover { transform:translateY(-3px); box-shadow:0 10px 30px rgba(83,74,183,.45); }
+
+    /* QUIZ */
+    .progress-bar-bg { height:6px; background:var(--gray-200); border-radius:3px; margin-bottom:1.5rem; overflow:hidden; }
+    .progress-bar-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--purple-600),var(--pink-400)); transition:width .45s cubic-bezier(.4,0,.2,1); }
+    .q-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+    .q-counter { font-size:12px; font-weight:700; color:var(--text-tertiary); }
+    .q-text { font-size:1.1rem; font-weight:700; line-height:1.7; margin-bottom:1.5rem; min-height:56px; }
+    .choices { display:flex; flex-direction:column; gap:.75rem; margin-bottom:1.25rem; }
+    .choice-btn { padding:1rem 1.25rem; border-radius:var(--radius-lg); border:1.5px solid var(--border); background:white; color:var(--text-primary); font-family:'Zen Maru Gothic',sans-serif; font-size:.9rem; font-weight:500; text-align:left; cursor:pointer; transition:all .18s; line-height:1.6; }
+    .choice-btn:hover:not(:disabled) { border-color:var(--purple-400); background:var(--purple-50); transform:translateX(5px); }
+    .choice-btn:disabled { cursor:default; }
+    .choice-btn.selected-cool { border-color:var(--purple-600); background:var(--purple-50); color:var(--purple-900); }
+    .choice-btn.selected-hot { border-color:var(--pink-400); background:var(--pink-50); color:var(--pink-800); }
+
+    /* BACK BUTTON */
+    .back-btn { display:inline-flex; align-items:center; gap:.4rem; padding:.55rem 1.2rem; border-radius:50px; border:1.5px solid var(--border); background:white; color:var(--text-secondary); font-family:'Zen Maru Gothic',sans-serif; font-size:.82rem; font-weight:700; cursor:pointer; transition:all .15s; }
+    .back-btn:hover { background:var(--gray-100); transform:translateY(-1px); }
+    .back-btn:disabled { opacity:.3; cursor:default; transform:none; }
+
+    /* RESULT */
+    .result-screen { text-align:center; }
+    .result-header h2 { font-size:1.5rem; font-weight:900; margin-bottom:.25rem; }
+    .result-header p { font-size:.85rem; color:var(--text-secondary); margin-bottom:1.5rem; }
+    .result-main-card { background:white; border:1.5px solid var(--border); border-radius:var(--radius-xl); padding:2.5rem 2rem; margin-bottom:1.5rem; position:relative; overflow:hidden; }
+    .result-main-card::before { content:''; position:absolute; top:0;left:0;right:0; height:4px; }
+    .result-main-card.cool-result::before { background:linear-gradient(90deg,var(--purple-800),var(--purple-400)); }
+    .result-main-card.hot-result::before { background:linear-gradient(90deg,var(--pink-600),var(--pink-200)); }
+    .result-type-badge { display:inline-block; font-size:11px; font-weight:700; letter-spacing:.12em; padding:4px 16px; border-radius:20px; margin-bottom:1.25rem; }
+    .cool-badge { background:var(--purple-50); color:var(--purple-600); }
+    .hot-badge { background:var(--pink-50); color:var(--pink-600); }
+    .result-animal-wrap { margin:0 auto 1.25rem; width:120px; height:120px; }
+    .result-pct { font-size:3.5rem; font-weight:900; line-height:1; margin-bottom:.25rem; }
+    .cool-pct { color:var(--purple-600); }
+    .hot-pct { color:var(--pink-400); }
+    .result-animal-name { font-size:1.5rem; font-weight:900; margin-bottom:.75rem; }
+    .result-animal-desc { font-size:.9rem; color:var(--text-secondary); line-height:1.7; max-width:360px; margin:0 auto; }
+    .result-sub-scores { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:1.5rem; }
+    .sub-score-card { background:white; border:1.5px solid var(--border); border-radius:var(--radius-md); padding:1rem; }
+    .sub-score-label { font-size:11px; font-weight:700; color:var(--text-tertiary); margin-bottom:.25rem; }
+    .sub-score-value { font-size:1.8rem; font-weight:900; }
+    .result-detail-card { background:white; border:1.5px solid var(--border); border-radius:var(--radius-lg); padding:1.5rem; margin-bottom:1rem; text-align:left; }
+    .detail-card-title { font-size:.75rem; font-weight:700; letter-spacing:.1em; color:var(--text-tertiary); margin-bottom:.75rem; }
+    .compat-row { display:flex; align-items:center; gap:.75rem; margin-bottom:.5rem; }
+    .compat-tag { font-size:.75rem; font-weight:700; padding:2px 10px; border-radius:20px; white-space:nowrap; }
+    .compat-good { background:#e8f5e9; color:#2e7d32; }
+    .compat-bad { background:#fce4ec; color:#c62828; }
+    .trait-list { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.5rem; }
+    .trait-chip { font-size:.8rem; padding:4px 12px; border-radius:20px; background:var(--gray-100); color:var(--text-secondary); font-weight:700; }
+    .result-comment { background:var(--gray-100); border-radius:var(--radius-md); padding:1.25rem 1.5rem; font-size:.9rem; color:var(--text-primary); line-height:1.8; text-align:left; margin-bottom:1.5rem; }
+
+    /* SHARE */
+    .share-section { margin-bottom:1.5rem; }
+    .share-label { font-size:.8rem; font-weight:700; color:var(--text-tertiary); margin-bottom:.75rem; }
+    .share-btns { display:flex; gap:.75rem; justify-content:center; flex-wrap:wrap; }
+    .share-btn { display:inline-flex; align-items:center; gap:.5rem; padding:.7rem 1.4rem; border-radius:50px; border:none; font-family:'Zen Maru Gothic',sans-serif; font-size:.85rem; font-weight:700; cursor:pointer; transition:all .15s; }
+    .share-btn:hover { transform:translateY(-2px); opacity:.9; }
+    .share-btn-x { background:#000; color:white; }
+    .share-btn-line { background:#00B900; color:white; }
+    .share-btn-copy { background:white; color:var(--text-primary); border:1.5px solid var(--border); }
+    .retry-btn { display:inline-block; padding:.8rem 2.5rem; font-size:.95rem; font-weight:700; font-family:'Zen Maru Gothic',sans-serif; border-radius:50px; border:1.5px solid var(--border); cursor:pointer; background:white; color:var(--text-primary); transition:all .15s; margin-bottom:2rem; }
+    .retry-btn:hover { background:var(--gray-100); transform:translateY(-2px); }
+
+    @keyframes popIn { 0%{transform:scale(.6) rotate(-5deg);opacity:0} 65%{transform:scale(1.1) rotate(2deg)} 100%{transform:scale(1) rotate(0);opacity:1} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    .pop-in { animation:popIn .55s cubic-bezier(.34,1.56,.64,1) forwards; }
+    .fade-up { animation:fadeUp .4s ease forwards; }
+    .d1{animation-delay:.1s;opacity:0}.d2{animation-delay:.2s;opacity:0}
+    .d3{animation-delay:.35s;opacity:0}.d4{animation-delay:.5s;opacity:0}
+    .d5{animation-delay:.65s;opacity:0}.d6{animation-delay:.8s;opacity:0}
+
+    @media(max-width:480px){ .mascot-row{gap:1.5rem} .result-main-card{padding:2rem 1.25rem} .share-btns{flex-direction:column;align-items:center} }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- タイトル画面 -->
+  <div id="title-screen" class="screen active title-screen">
+    <div class="ad-slot" style="margin-bottom:1.5rem">📢 広告スペース（728×90）</div>
+    <div class="title-badge">2025年版 SNS世代診断</div>
+    <h1 class="title-main"><span class="cool">冷笑</span> vs <span class="hot">熱笑</span><br>診断テスト</h1>
+    <p class="title-sub">あなたは「うおw」「ど、どわーwww」な<strong>冷笑系</strong>？<br>それとも全力まっすぐな<strong>熱笑系</strong>？<br>15問に答えてあなたのキャラを診断！</p>
+    <div class="mascot-row">
+      <div class="mascot-preview">
+        <svg width="90" height="90" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#EEEDFE"/><ellipse cx="50" cy="75" rx="22" ry="12" fill="#AFA9EC"/><ellipse cx="50" cy="55" rx="26" ry="28" fill="#7F77DD"/><circle cx="50" cy="48" r="20" fill="#F1EFE8"/><circle cx="42" cy="44" r="3.5" fill="#3C3489"/><circle cx="58" cy="44" r="3.5" fill="#3C3489"/><ellipse cx="50" cy="52" rx="6" ry="4" fill="#F0997B"/><path d="M44 56 Q50 60 56 56" stroke="#3C3489" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M18 38 Q12 28 20 25 Q28 22 30 35" fill="#7F77DD"/><path d="M82 38 Q88 28 80 25 Q72 22 70 35" fill="#7F77DD"/></svg>
+        <span>冷笑ライオン</span>
+      </div>
+      <div class="mascot-preview">
+        <svg width="90" height="90" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#FBEAF0"/><ellipse cx="50" cy="72" rx="18" ry="10" fill="#F4C0D1"/><ellipse cx="50" cy="55" rx="24" ry="26" fill="#ED93B1"/><circle cx="50" cy="46" r="20" fill="#FAEEDA"/><circle cx="42" cy="43" r="4" fill="#411A0C"/><circle cx="58" cy="43" r="4" fill="#411A0C"/><circle cx="43" cy="42" r="1.5" fill="white"/><circle cx="59" cy="42" r="1.5" fill="white"/><ellipse cx="50" cy="51" rx="7" ry="5" fill="#F0997B"/><path d="M43 57 Q50 63 57 57" stroke="#633806" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="32" cy="32" rx="9" ry="13" fill="#ED93B1" transform="rotate(-20,32,32)"/><ellipse cx="68" cy="32" rx="9" ry="13" fill="#ED93B1" transform="rotate(20,68,32)"/></svg>
+        <span>熱笑いぬ</span>
+      </div>
+    </div>
+    <button class="start-btn" onclick="startQuiz()">診断スタート！</button>
+    <div class="ad-slot ad-slot-rect" style="margin-top:2rem;max-width:300px">📢 広告スペース（300×250）</div>
+  </div>
+
+  <!-- クイズ画面 -->
+  <div id="quiz-screen" class="screen">
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="q-meta">
+      <span class="q-counter" id="q-counter">1 / 15</span>
+      <button class="back-btn" id="back-btn" onclick="goBack()" disabled>← 前の問題</button>
+    </div>
+    <div class="q-text" id="q-text"></div>
+    <div class="choices" id="choices"></div>
+    <div id="quiz-ad-area"></div>
+  </div>
+
+  <!-- 結果画面 -->
+  <div id="result-screen" class="screen result-screen">
+    <div class="ad-slot fade-up" style="margin-bottom:1.5rem">📢 広告スペース（728×90）</div>
+    <div class="result-header fade-up">
+      <h2>診断結果</h2>
+      <p>あなたのリアルなキャラが明らかに…！</p>
+    </div>
+    <div id="result-main-card" class="result-main-card fade-up d1">
+      <div id="result-type-badge" class="result-type-badge"></div>
+      <div class="result-animal-wrap pop-in" id="result-animal-svg"></div>
+      <div class="result-pct" id="result-pct"></div>
+      <div class="result-animal-name" id="result-animal-name"></div>
+      <div class="result-animal-desc" id="result-animal-desc"></div>
+    </div>
+    <div class="result-sub-scores fade-up d2" id="result-sub-scores"></div>
+    <div class="ad-slot ad-slot-rect fade-up d2" style="max-width:300px;margin-bottom:1.5rem">📢 広告スペース（300×250）</div>
+    <div class="result-comment fade-up d3" id="result-comment"></div>
+    <div id="result-detail-area"></div>
+    <div class="ad-slot fade-up d4" style="margin-bottom:1.5rem">📢 広告スペース（728×90）</div>
+    <div class="share-section fade-up d4">
+      <div class="share-label">📣 結果をシェアする</div>
+      <div class="share-btns">
+        <button class="share-btn share-btn-x" onclick="shareX()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.737-8.835L1.254 2.25H8.08l4.26 5.632zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          Xでポスト
+        </button>
+        <button class="share-btn share-btn-line" onclick="shareLine()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+          LINEで送る
+        </button>
+        <button class="share-btn share-btn-copy" id="copy-btn" onclick="copyLink()">🔗 リンクをコピー</button>
+      </div>
+    </div>
+    <div class="ad-slot ad-slot-rect fade-up d5" style="max-width:300px;margin-bottom:1.5rem">📢 広告スペース（300×250）</div>
+    <button class="retry-btn fade-up d6" onclick="resetQuiz()">もう一度やる</button>
+    <div class="ad-slot fade-up d6" style="margin-bottom:1rem">📢 広告スペース（728×90）</div>
+  </div>
+
+</div>
+<script>
+// ── 問題（15問）──
+const questions = [
+  { text:"友達が新しい趣味を始めたと話してくれた。どう反応する？", choices:[
+    {text:"「うおw どんな趣味？w」って感じで若干引きながら聞く",cool:3,hot:0},
+    {text:"「えー！すごい、どんな感じ？」って素直に興味を示す",cool:0,hot:3},
+    {text:"「ああ…またそういうの始めたんだ」ってなる",cool:2,hot:0},
+    {text:"「一緒にやろう！」って即乗っかる",cool:0,hot:2}
+  ]},
+  { text:"SNSで感動した動画を見た。どうする？", choices:[
+    {text:"「草」「エモいw」ってコメントして終わり",cool:3,hot:0},
+    {text:"感動した気持ちを正直にコメントする",cool:0,hot:3},
+    {text:"シェアはするが「まあこういうの好きな人いるよね」ってノリ",cool:2,hot:0},
+    {text:"号泣して友達にも見てと送る",cool:0,hot:2}
+  ]},
+  { text:"誰かが夢や目標を真剣に語り始めた。内心どう思う？", choices:[
+    {text:"「ど、どわーwww 真剣すぎて直視できない」",cool:3,hot:0},
+    {text:"応援したくなって前のめりで聞く",cool:0,hot:3},
+    {text:"「お、おう…がんばって」ってなる",cool:2,hot:0},
+    {text:"自分の夢も語りたくなってくる",cool:0,hot:2}
+  ]},
+  { text:"テスト前、クラスメートが「めっちゃ勉強した！」と言っている。", choices:[
+    {text:"「がんばっちゃってて草」って思う",cool:3,hot:0},
+    {text:"「すごい！何の科目？教えて！」ってなる",cool:0,hot:3},
+    {text:"「ああ…そういうノリ…」ってちょっと距離をとる",cool:2,hot:0},
+    {text:"「じゃ私も頑張らなきゃ！」って刺激を受ける",cool:0,hot:2}
+  ]},
+  { text:"映画を見て泣いてしまった。友達に言う？", choices:[
+    {text:"「泣いたとか恥ずかしいし絶対言わん」",cool:3,hot:0},
+    {text:"「めちゃ泣いた！感動した！」って普通に言う",cool:0,hot:3},
+    {text:"「まあ…ちょっと目が潤んだかも」ってぼかす",cool:2,hot:0},
+    {text:"友達みんなに「見て見て！」って勧める",cool:0,hot:2}
+  ]},
+  { text:"グループLINEで突然「みんな大好き！」ってメッセが来た。", choices:[
+    {text:"「うおw 何これw」ってドン引き気味に見る",cool:3,hot:0},
+    {text:"「私も！！！」って即返信する",cool:0,hot:3},
+    {text:"「ああ…こういうノリか…」ってスルーする",cool:2,hot:0},
+    {text:"スタンプを大量に送る",cool:0,hot:2}
+  ]},
+  { text:"好きなアーティストのライブに行くことになった。", choices:[
+    {text:"「まあ行くけど、テンション上げすぎるのもなあ」",cool:3,hot:0},
+    {text:"カウントダウンして毎日楽しみにしてる",cool:0,hot:3},
+    {text:"「行ったとして、どうせ疲れるんだろうな」",cool:2,hot:0},
+    {text:"グッズも全部揃えて完璧な状態で行く",cool:0,hot:2}
+  ]},
+  { text:"誰かが「今日の夕焼けきれいすぎた」とポストしてる。", choices:[
+    {text:"「ポエム書いてて草」",cool:3,hot:0},
+    {text:"「わかる！私も見た！」って反応する",cool:0,hot:3},
+    {text:"「ああ…こういう感じの人か」",cool:2,hot:0},
+    {text:"今すぐ外に見に行こうとする",cool:0,hot:2}
+  ]},
+  { text:"誰かがあなたを褒めてくれた。どう反応する？", choices:[
+    {text:"「え、何が目的？」って疑う",cool:3,hot:0},
+    {text:"「ありがとう！！」って素直に喜ぶ",cool:0,hot:3},
+    {text:"「いや別に…」ってそっけなくする",cool:2,hot:0},
+    {text:"そのまま相手も褒め返す",cool:0,hot:2}
+  ]},
+  { text:"新しいことに挑戦しようとしている。失敗したらどう思う？", choices:[
+    {text:"「どうせ続かないからやらない」って始める前から思う",cool:3,hot:0},
+    {text:"「失敗しても経験になる」と前向きに捉える",cool:0,hot:3},
+    {text:"「まあやってみるけど期待はしない」",cool:2,hot:0},
+    {text:"失敗が怖くても飛び込んでしまう",cool:0,hot:2}
+  ]},
+  { text:"友達と全力でバカなことをやる機会がある。", choices:[
+    {text:"「恥ずかしいし、そういうのはいい」",cool:3,hot:0},
+    {text:"「最高！やる！絶対やる！」",cool:0,hot:3},
+    {text:"「見てるのは好きだけど参加はちょっと…」",cool:2,hot:0},
+    {text:"むしろ自分が一番ノリノリになる",cool:0,hot:2}
+  ]},
+  { text:"好きなものについて語るとき、どのくらい語る？", choices:[
+    {text:"「好きだけど語るのはちょっと恥ずかしい」",cool:3,hot:0},
+    {text:"「止まらなくなる、気づいたら2時間経ってた」",cool:0,hot:3},
+    {text:"「まあ好きだけど別に全部話さなくてもいい」",cool:2,hot:0},
+    {text:"SNSに布教記事を書き始める",cool:0,hot:2}
+  ]},
+  { text:"応援していたチームが優勝した！", choices:[
+    {text:"「まあ、そうか」って感じ。冷静に情報収集する",cool:3,hot:0},
+    {text:"「やったーーー！！！」って飛び跳ねる",cool:0,hot:3},
+    {text:"「ふーん」って思いながら少し嬉しい",cool:2,hot:0},
+    {text:"知り合いに手当たり次第報告して回る",cool:0,hot:2}
+  ]},
+  { text:"流行りのドラマが話題になっている。", choices:[
+    {text:"「流行ってるから見ないかな」",cool:3,hot:0},
+    {text:"「気になる！今日から見る！」",cool:0,hot:3},
+    {text:"「まあ機会があれば」",cool:2,hot:0},
+    {text:"徹夜で一気見してしまう",cool:0,hot:2}
+  ]},
+  { text:"最後に。あなたにとって「本気を出す」ことは？", choices:[
+    {text:"「なんかダサい。スマートに見せたい」",cool:3,hot:0},
+    {text:"「カッコいい。全力が一番かっこいい」",cool:0,hot:3},
+    {text:"「場合による。人に見せるのはちょっと恥ずかしい」",cool:2,hot:0},
+    {text:"「当然。やるなら全力でしょ」",cool:0,hot:2}
+  ]}
+];
+
+// ── 動物データ（各6種）──
+// 冷笑：ライオン・スネーク・キツネ・クロネコ・フクロウ・カメ
+const coolAnimals = [
+  { name:"冷笑ライオン",  range:[83,100], svgType:"lion",
+    desc:"孤高の王。熱量ある人を見ると「うおw」と引いてしまう生粋の冷笑クリーチャー。でも本当はちょっとだけうらやましいんでしょ？",
+    traits:["観察眼鋭い","クール","毒舌気味","孤高"], compat:"熱笑いぬ", incomp:"熱笑うさぎ",
+    advice:"本音を少しだけ出してみると、人間関係がぐっと豊かになるかも。全力を「ダサい」と思う気持ち、実は自分への照れ隠しかもしれない。" },
+  { name:"冷笑スネーク",  range:[66,82], svgType:"snake",
+    desc:"毒舌クール系。斜に構えることで自分を守るタイプ。実は観察力が高くて鋭い。熱笑勢の「痛さ」に一番気づいてるのはあなただ。",
+    traits:["分析上手","斜め視点","本質を見る","クールビューティ"], compat:"熱笑パンダ", incomp:"熱笑いぬ",
+    advice:"その観察眼、もっと使えばいい。「これはいい」と思えたときは素直に言える勇気を持つと、信頼度が爆上がりする。" },
+  { name:"冷笑キツネ",    range:[49,65], svgType:"fox",
+    desc:"ちょっとクール気取り。全力の人を見て「ああ…そういうノリ…」ってなりがちだけど、内心は楽しんでる。本当の気持ちを隠すのが上手すぎる。",
+    traits:["器用","感情読まれない","実は楽しんでる","バランス型"], compat:"熱笑ひよこ", incomp:"熱笑うさぎ",
+    advice:"「ちょっとだけ楽しんでる」を表に出してみると、意外と人が集まってくるよ。" },
+  { name:"冷笑クロネコ",  range:[33,48], svgType:"cat",
+    desc:"自由気ままなドライ系。人の熱量にほどほどに距離をとるが、無関心ではない。自分のペースが最優先。それでいい。",
+    traits:["マイペース","自立心強い","こだわり派","静かな観察者"], compat:"熱笑ハムスター", incomp:"熱笑いぬ",
+    advice:"自分のペースを守れるのは才能。ときどき「好き」を表現するだけで周りにもっと理解してもらえる。" },
+  { name:"冷笑フクロウ",  range:[17,32], svgType:"owl",
+    desc:"知的クール系。感情より論理で動くタイプ。「それって意味ある？」とまず考えてしまう。実は誰よりも深く物事を見ている。",
+    traits:["論理的","冷静沈着","深い洞察","言葉少なめ"], compat:"熱笑タヌキ", incomp:"熱笑いぬ",
+    advice:"頭の中の分析、ときには黙って感じるだけでもいい。感情を「非効率」と切り捨てないで。" },
+  { name:"冷笑カメ",      range:[0,16],  svgType:"turtle",
+    desc:"ゆっくり冷静系。熱量のある場にいても動じない鉄壁のマイペース。「まあそのうち」が口癖で、熱笑勢のテンションを遠くから眺めている。",
+    traits:["動じない","超マイペース","堅実","省エネ主義"], compat:"熱笑ハムスター", incomp:"熱笑うさぎ",
+    advice:"その落ち着き、本当に貴重な才能。ただ、たまには流れに乗ってみると新しい自分に出会えるかも。" }
+];
+
+// 熱笑：いぬ・うさぎ・パンダ・ひよこ・ハムスター・タヌキ
+const hotAnimals = [
+  { name:"熱笑いぬ",      range:[83,100], svgType:"dog",
+    desc:"全力まっすぐ系の代表格。感動したら泣く、楽しかったら叫ぶ。そのエネルギーが周りを動かす。冷笑勢が内心うらやましがってるの、気づいてる？",
+    traits:["エネルギッシュ","感情豊か","巻き込み上手","真っ直ぐ"], compat:"冷笑キツネ", incomp:"冷笑ライオン",
+    advice:"そのまっすぐさ、最高の武器。「温度差」を感じる相手にも少し合わせる余裕があると、さらに幅が広がる。" },
+  { name:"熱笑うさぎ",    range:[66,82], svgType:"rabbit",
+    desc:"純粋ガンバリ系。応援上手で、友達の夢に自分のことのように興奮する。エモいものに弱い。その素直さが武器だよ。",
+    traits:["応援上手","共感力高い","エモに弱い","素直"], compat:"冷笑スネーク", incomp:"冷笑ライオン",
+    advice:"人の気持ちに寄り添える才能は本物。共感しすぎて疲れてしまうことも。自分の気持ちも同じくらい大切に。" },
+  { name:"熱笑パンダ",    range:[49,65], svgType:"panda",
+    desc:"のんびり熱笑系。強烈ではないが、好きなものへの愛情は本物。巻き込まれると意外と熱くなる。実は底力があるタイプ。",
+    traits:["マイペース","隠れた熱量","愛情深い","底力あり"], compat:"冷笑クロネコ", incomp:"冷笑スネーク",
+    advice:"最初はゆっくりでも、火がついたら最強。じわじわ熱くなるスタイル、実はかなり長続きするタイプ。" },
+  { name:"熱笑ひよこ",    range:[33,48], svgType:"chick",
+    desc:"まだ熱笑が育ちかけ。素直に楽しめる才能はある。もっと解放したら最強かも。その殻を破る日を楽しみにしてる。",
+    traits:["可能性の塊","素直な心","成長中","感受性豊か"], compat:"冷笑キツネ", incomp:"冷笑ライオン",
+    advice:"「恥ずかしい」って思う瞬間が、一番成長できるチャンス。その殻を破るのはきっとすぐそこ。" },
+  { name:"熱笑ハムスター", range:[17,32], svgType:"hamster",
+    desc:"こっそり熱笑系。外では静かだが、信頼できる人の前ではぽろっと熱い本音が出る。ひとりでこっそり推し活してるタイプ。",
+    traits:["内弁慶","こっそり熱い","忠実","実はオタク気質"], compat:"冷笑クロネコ", incomp:"冷笑フクロウ",
+    advice:"そのギャップ、絶対に武器になる。もう少しだけ「好き」を外に出してみて。共感してくれる人は必ずいる。" },
+  { name:"熱笑タヌキ",    range:[0,16],  svgType:"tanuki",
+    desc:"天然熱笑系。本人は冷静のつもりだが、気づいたら全力になってる。空気を読みすぎて損してるけど、その温かさで人が集まってくる。",
+    traits:["天然","空気読みすぎ","温かい","巻き込まれ型"], compat:"冷笑フクロウ", incomp:"冷笑ライオン",
+    advice:"自分の熱さを恥ずかしがらないで。あなたが本気で楽しんでる姿、周りはちゃんと見てるよ。" }
+];
+
+// ── SVG関数 ──
+function svgLion(s){return`<svg width="${s}" height="${s}" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#EEEDFE"/><ellipse cx="50" cy="75" rx="22" ry="12" fill="#AFA9EC"/><ellipse cx="50" cy="55" rx="26" ry="28" fill="#7F77DD"/><circle cx="50" cy="48" r="20" fill="#F1EFE8"/><circle cx="42" cy="44" r="3.5" fill="#3C3489"/><circle cx="58" cy="44" r="3.5" fill="#3C3489"/><ellipse cx="50" cy="52" rx="6" ry="4" fill="#F0997B"/><path d="M44 56 Q50 60 56 56" stroke="#3C3489" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M18 38 Q12 28 20 25 Q28 22 30 35" fill="#7F77DD"/><path d="M82 38 Q88 28 80 25 Q72 22 70 35" fill="#7F77DD"/><line x1="36" y1="52" x2="24" y2="50" stroke="#B4B2A9" stroke-width="1"/><line x1="36" y1="55" x2="23" y2="54" stroke="#B4B2A9" stroke-width="1"/><line x1="64" y1="52" x2="76" y2="50" stroke="#B4B2A9" stroke-width="1"/><line x1="64" y1="55" x2="77" y2="54" stroke="#B4B2A9" stroke-width="1"/></svg>`;}
+function svgSnake(s){return`<svg width="${s}" height="${s}" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#EEEDFE"/><ellipse cx="50" cy="65" rx="30" ry="18" fill="#7F77DD"/><ellipse cx="50" cy="58" rx="22" ry="13" fill="#AFA9EC"/><ellipse cx="50" cy="38" rx="18" ry="16" fill="#7F77DD"/><ellipse cx="50" cy="36" rx="14" ry="12" fill="#F1EFE8"/><circle cx="44" cy="33" r="3" fill="#3C3489"/><circle cx="56" cy="33" r="3" fill="#3C3489"/><circle cx="45" cy="32" r="1" fill="white"/><circle cx="57" cy="32" r="1" fill="white"/><path d="M47 42 Q50 46 53 42" stroke="#3C3489" stroke-width="1.2" fill="none"/><path d="M50 46 L47 52 M50 46 L53 52" stroke="#D4537E" stroke-width="1.5" stroke-linecap="round"/><ellipse cx="50" cy="70" rx="15" ry="8" fill="#534AB7" opacity=".4"/></svg>`;}
+function svgFox(s){return`<svg width="${s}" height="${s}" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#EEEDFE"/><ellipse cx="50" cy="65" rx="20" ry="15" fill="#AFA9EC"/><ellipse cx="50" cy="52" rx="22" ry="24" fill="#7F77DD"/><ellipse cx="50" cy="44" rx="18" ry="16" fill="#F1EFE8"/><circle cx="43" cy="41" r="3" fill="#3C3489"/><circle cx="57" cy="41" r="3" fill="#3C3489"/><ellipse cx="50" cy="48" rx="5" ry="4" fill="#F0997B"/><path d="M45 52 Q50 55 55 52" stroke="#3C3489" stroke-width="1.2" fill="none" stroke-linecap="round"/><polygon points="32,18 22,36 40,32" fill="#7F77DD"/><polygon points="68,18 78,36 60,32" fill="#7F77DD"/><polygon points="32,22 25,34 38,31" fill="#EEEDFE"/><polygon points="68,22 75,34 62,31" fill="#EEEDFE"/><ellipse cx="50" cy="78" rx="12" ry="6" fill="#AFA9EC"/></svg>`;}
+function svgCat(s){return`<svg width="${s}" height="${s}" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#D3D1C7"/><ellipse cx="50" cy="68" rx="18" ry="12" fill="#B4B2A9"/><ellipse cx="50" cy="54" rx="22" ry="22" fill="#888780"/><ellipse cx="50" cy="45" rx="18" ry="16" fill="#F1EFE8"/><ellipse cx="43" cy="42" rx="2" ry="4" fill="#2C2C2A"/><ellipse cx="57" cy="42" rx="2" ry="4" fill="#2C2C2A"/><ellipse cx="50" cy="49" rx="5" ry="3" fill="#F4C0D1"/><path d="M45 53 Q50 56 55 53" stroke="#444441" stroke-width="1.2" fill="none" stroke-linecap="round"/><polygon points="34,20 28,38 42,34" fill="#888780"/><polygon points="66,20 72,38 58,34" fill="#888780"/><polygon points="34,23 30,35 40,32" fill="#F4C0D1"/><polygon points="66,23 70,35 60,32" fill="#F4C0D1"/><line x1="36" y1="49" x2="22" y2="46" stroke="#D3D1C7" stroke-width="1"/><line x1="36" y1="52" x2="21" y2="51" stroke="#D3D1C7" stroke-width="1"/><line x1="64" y1="49" x2="78" y2="46" stroke="#D3D1C7" stroke-width="1"/><line x1="64" y1="52" x2="79" y2="51" stroke="#D3D1C7" stroke-width="1"/></svg>`;}
+function svgOwl(s){return`<svg width="${s}" height="${s}" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#E8E6F8"/><ellipse cx="50" cy="60" rx="26" ry="28" fill="#6B62C8"/><ellipse cx="50" cy="58" rx="18" ry="20" fill="#9E98E0"/><ellipse cx="50" cy="44" rx="22" ry="18" fill="#6B62C8"/><circle cx="40" cy="42" r="10" fill="#F1EFE8"/><circle cx="60" cy="42" r="10" fill="#F1EFE8"/><circle cx="40" cy="42" r="6" fill="#2C2060"/><circle cx="60" cy="42" r="6" fill="#2C2060"/><circle cx="41" cy="40" r="2" fill="white"/><circle cx="61" cy="40" r="2" fill="white"/><ellipse cx="50" cy="51" rx="5" ry="3" fill="#F0A050"/><polygon points="46,49 50,44 54,49" fill="#F0A050"/><path d="M20 35 Q15 20 25 18 Q32 16 34 30" fill="#6B62C8"/><path d="M80 35 Q85 20 75 18 Q68 16 66 30" fill="#6B62C8"/><ellipse cx="50" cy="76" rx="14" ry="8" fill="#9E98E0"/></svg>`;}
+function svgTurtle(s){return`<svg width="${s}" height="${s}" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#D8F0E0"/><ellipse cx="50" cy="58" rx="30" ry="24" fill="#4CAF50"/><ellipse cx="50" cy="56" rx="26" ry="20" fill="#66BB6A"/><ellipse cx="50" cy="54" rx="22" ry="17" fill="#388E3C"/><line x1="50" y1="37" x2="50" y2="71" stroke="#2E7D32" stroke-width="1.5"/><line x1="28" y1="54" x2="72" y2="54" stroke="#2E7D32" stroke-width="1.5"/><line x1="32" y1="40" x2="68" y2="68" stroke="#2E7D32" stroke-width="1.5"/><line x1="68" y1="40" x2="32" y2="68" stroke="#2E7D32" stroke-width="1.5"/><circle cx="50" cy="36" r="13" fill="#66BB6A"/><ellipse cx="50" cy="34" rx="10" ry="9" fill="#A5D6A7"/><circle cx="45" cy="32" r="2.5" fill="#1B5E20"/><circle cx="55" cy="32" r="2.5" fill="#1B5E20"/><circle cx="46" cy="31" r="1" fill="white"/><circle cx="56" cy="31" r="1" fill="white"/><ellipse cx="50" cy="38" rx="4" ry="2.5" fill="#F0997B"/><path d="M46 41 Q50 44 54 41" stroke="#1B5E20" stroke-width="1.2" fill="none" stroke-linecap="round"/><ellipse cx="25" cy="60" rx="7" ry="5" fill="#66BB6A" transform="rotate(-30,25,60)"/><ellipse cx="75" cy="60" rx="7" ry="5" fill="#66BB6A" transform="rotate(30,75,60)"/><ellipse cx="30" cy="72" rx="7" ry="5" fill="#66BB6A" transform="rotate(20,30,72)"/><ellipse cx="70" cy="72" rx="7" ry="5" fill="#66BB6A" transform="rotate(-20,70,72)"/><ellipse cx="50" cy="80" rx="8" ry="5" fill="#66BB6A"/></svg>`;}
+function svgDog(s){return`<svg width="${s}" height="${s}" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#FBEAF0"/><ellipse cx="50" cy="72" rx="18" ry="10" fill="#F4C0D1"/><ellipse cx="50" cy="55" rx="24" ry="26" fill="#ED93B1"/><circle cx="50" cy="46" r="20" fill="#FAEEDA"/><circle cx="42" cy="43" r="4" fill="#411A0C"/><circle cx="58" cy="43" r="4" fill="#411A0C"/><circle cx="43" cy="42" r="1.5" fill="white"/><circle cx="59" cy="42" r="1.5" fill="white"/><ellipse cx="50" cy="51" rx="7" ry="5" fill="#F0997B"/><path d="M43 57 Q50 63 57 57" stroke="#633806" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="32" cy="32" rx="9" ry="13" fill="#ED93B1" transform="rotate(-20,32,32)"/><ellipse cx="68" cy="32" rx="9" ry="13" fill="#ED93B1" transform="rotate(20,68,32)"/><ellipse cx="32" cy="32" rx="5" ry="9" fill="#F4C0D1" transform="rotate(-20,32,32)"/><ellipse cx="68" cy="32" rx="5" ry="9" fill="#F4C0D1" transform="rotate(20,68,32)"/></svg>`;}
+function svgRabbit(s){return`<svg width="${s}" height="${s}" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#EAF3DE"/><ellipse cx="50" cy="72" rx="18" ry="10" fill="#C0DD97"/><ellipse cx="50" cy="55" rx="22" ry="24" fill="#97C459"/><circle cx="50" cy="46" r="20" fill="#FAEEDA"/><circle cx="42" cy="44" r="3.5" fill="#27500A"/><circle cx="58" cy="44" r="3.5" fill="#27500A"/><circle cx="43" cy="43" r="1.5" fill="white"/><ellipse cx="50" cy="51" rx="5" ry="4" fill="#F0997B"/><path d="M44 57 Q50 62 56 57" stroke="#27500A" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="35" cy="22" rx="6" ry="18" fill="#97C459" transform="rotate(-10,35,22)"/><ellipse cx="65" cy="22" rx="6" ry="18" fill="#97C459" transform="rotate(10,65,22)"/><ellipse cx="35" cy="22" rx="3" ry="13" fill="#F4C0D1" transform="rotate(-10,35,22)"/><ellipse cx="65" cy="22" rx="3" ry="13" fill="#F4C0D1" transform="rotate(10,65,22)"/></svg>`;}
+function svgPanda(s){return`<svg width="${s}" height="${s}" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#E1F5EE"/><ellipse cx="50" cy="72" rx="18" ry="10" fill="#D3D1C7"/><circle cx="50" cy="52" r="22" fill="#F1EFE8"/><ellipse cx="38" cy="44" rx="9" ry="8" fill="#444441"/><ellipse cx="62" cy="44" rx="9" ry="8" fill="#444441"/><circle cx="38" cy="44" r="5" fill="white"/><circle cx="62" cy="44" r="5" fill="white"/><circle cx="38" cy="44" r="2.5" fill="#1D1D1B"/><circle cx="62" cy="44" r="2.5" fill="#1D1D1B"/><ellipse cx="50" cy="55" rx="6" ry="4" fill="#F0997B"/><path d="M44 60 Q50 65 56 60" stroke="#2C2C2A" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="28" cy="32" r="12" fill="#444441"/><circle cx="72" cy="32" r="12" fill="#444441"/></svg>`;}
+function svgChick(s){return`<svg width="${s}" height="${s}" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#FAEEDA"/><ellipse cx="50" cy="68" rx="16" ry="10" fill="#FAC775"/><ellipse cx="50" cy="55" rx="20" ry="22" fill="#EF9F27"/><circle cx="50" cy="46" r="18" fill="#FAEEDA"/><circle cx="43" cy="43" r="3" fill="#412402"/><circle cx="57" cy="43" r="3" fill="#412402"/><circle cx="44" cy="42" r="1" fill="white"/><ellipse cx="50" cy="50" rx="5" ry="3.5" fill="#F0997B"/><path d="M44 56 Q50 61 56 56" stroke="#412402" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M38 30 Q35 18 42 22" stroke="#EF9F27" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M62 30 Q65 18 58 22" stroke="#EF9F27" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`;}
+function svgHamster(s){return`<svg width="${s}" height="${s}" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#FDF0E0"/><ellipse cx="33" cy="58" rx="14" ry="12" fill="#F4C68C"/><ellipse cx="67" cy="58" rx="14" ry="12" fill="#F4C68C"/><ellipse cx="50" cy="55" rx="26" ry="24" fill="#E8A96C"/><circle cx="50" cy="46" r="22" fill="#FAEEDA"/><ellipse cx="36" cy="52" rx="10" ry="8" fill="#FAEEDA"/><ellipse cx="64" cy="52" rx="10" ry="8" fill="#FAEEDA"/><circle cx="43" cy="43" r="4" fill="#3A1A00"/><circle cx="57" cy="43" r="4" fill="#3A1A00"/><circle cx="44" cy="42" r="1.5" fill="white"/><circle cx="58" cy="42" r="1.5" fill="white"/><ellipse cx="50" cy="50" rx="5" ry="3.5" fill="#F0997B"/><path d="M43 56 Q50 62 57 56" stroke="#3A1A00" stroke-width="1.5" fill="none" stroke-linecap="round"/><ellipse cx="36" cy="30" rx="7" ry="10" fill="#E8A96C" transform="rotate(-15,36,30)"/><ellipse cx="64" cy="30" rx="7" ry="10" fill="#E8A96C" transform="rotate(15,64,30)"/><ellipse cx="36" cy="30" rx="4" ry="7" fill="#F4C0D1" transform="rotate(-15,36,30)"/><ellipse cx="64" cy="30" rx="4" ry="7" fill="#F4C0D1" transform="rotate(15,64,30)"/></svg>`;}
+function svgTanuki(s){return`<svg width="${s}" height="${s}" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#F0EAD8"/><ellipse cx="50" cy="68" rx="20" ry="14" fill="#C8A870"/><ellipse cx="50" cy="55" rx="26" ry="26" fill="#A0784C"/><circle cx="50" cy="46" r="22" fill="#FAEEDA"/><ellipse cx="38" cy="48" rx="10" ry="8" fill="#7A5230"/><ellipse cx="62" cy="48" rx="10" ry="8" fill="#7A5230"/><circle cx="43" cy="43" r="4" fill="#2A1200"/><circle cx="57" cy="43" r="4" fill="#2A1200"/><circle cx="44" cy="42" r="1.5" fill="white"/><circle cx="58" cy="42" r="1.5" fill="white"/><ellipse cx="50" cy="52" rx="6" ry="4" fill="#F0997B"/><path d="M43 58 Q50 64 57 58" stroke="#2A1200" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="32" cy="28" rx="9" ry="12" fill="#A0784C" transform="rotate(-15,32,28)"/><ellipse cx="68" cy="28" rx="9" ry="12" fill="#A0784C" transform="rotate(15,68,28)"/><ellipse cx="32" cy="28" rx="5" ry="8" fill="#F4C0D1" transform="rotate(-15,32,28)"/><ellipse cx="68" cy="28" rx="5" ry="8" fill="#F4C0D1" transform="rotate(15,68,28)"/><ellipse cx="50" cy="54" rx="12" ry="3" fill="#7A5230" opacity=".3"/></svg>`;}
+
+function getAnimalSVG(t,s){
+  return {lion:svgLion,snake:svgSnake,fox:svgFox,cat:svgCat,owl:svgOwl,turtle:svgTurtle,
+          dog:svgDog,rabbit:svgRabbit,panda:svgPanda,chick:svgChick,hamster:svgHamster,tanuki:svgTanuki}[t](s);
+}
+function getAnimal(pct, list){
+  return list.find(a => pct >= a.range[0] && pct <= a.range[1]) || list[list.length-1];
+}
+
+// ── ゲーム状態 ──
+const TOTAL = questions.length; // 15
+const MAX_SCORE = TOTAL * 3;    // 45
+let currentQ = 0;
+let answers = []; // {cool, hot, choiceIndex} per question
+let shuffledChoices = []; // 各問のシャッフル済み選択肢キャッシュ
+let resultText = '';
+
+function startQuiz(){
+  currentQ = 0; answers = []; shuffledChoices = [];
+  // 全問のシャッフル済み選択肢を事前生成
+  questions.forEach(q => {
+    shuffledChoices.push([...q.choices].sort(()=>Math.random()-.5));
+  });
+  document.getElementById('title-screen').classList.remove('active');
+  document.getElementById('quiz-screen').classList.add('active');
+  renderQuestion();
+}
+
+function renderQuestion(){
+  document.getElementById('q-counter').textContent = `${currentQ+1} / ${TOTAL}`;
+  document.getElementById('progress-fill').style.width = `${(currentQ/TOTAL)*100}%`;
+  document.getElementById('q-text').textContent = questions[currentQ].text;
+  document.getElementById('back-btn').disabled = currentQ === 0;
+
+  const choices = shuffledChoices[currentQ];
+  const el = document.getElementById('choices');
+  el.innerHTML = '';
+  choices.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = c.text;
+    // 既回答なら選択状態を復元
+    if(answers[currentQ] !== undefined && answers[currentQ].choiceIndex === i){
+      btn.classList.add(c.cool >= c.hot ? 'selected-cool' : 'selected-hot');
+    }
+    btn.onclick = () => selectChoice(c, i, btn);
+    el.appendChild(btn);
+  });
+
+  // 広告：5問目・10問目
+  const adArea = document.getElementById('quiz-ad-area');
+  if(currentQ === 4 || currentQ === 9){
+    adArea.innerHTML = `<div class="ad-slot" style="min-height:60px;margin-top:.5rem">📢 広告スペース（クイズ中）</div>`;
+  } else {
+    adArea.innerHTML = '';
+  }
+}
+
+function selectChoice(choice, idx, btn){
+  document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+  btn.classList.add(choice.cool >= choice.hot ? 'selected-cool' : 'selected-hot');
+  answers[currentQ] = { cool: choice.cool, hot: choice.hot, choiceIndex: idx };
+  setTimeout(() => {
+    currentQ++;
+    if(currentQ >= TOTAL) showResult();
+    else renderQuestion();
+  }, 300);
+}
+
+function goBack(){
+  if(currentQ === 0) return;
+  answers.splice(currentQ-1, 1); // 直前の回答を削除
+  currentQ--;
+  renderQuestion();
+}
+
+function calcScores(){
+  let cool = 0, hot = 0;
+  answers.forEach(a => { cool += a.cool; hot += a.hot; });
+  return {
+    cp: Math.min(Math.round((cool / MAX_SCORE) * 100), 100),
+    hp: Math.min(Math.round((hot  / MAX_SCORE) * 100), 100)
+  };
+}
+
+function getResultComment(winner, cp, hp){
+  if(winner === 'cool'){
+    if(cp >= 83) return "バリバリの冷笑勢。「うおw」「ど、どわーwww」が口癖になってるでしょ。熱笑系の全力さを見て引いてしまうのはわかるけど、実はその情熱、ちょっとうらやましくない？";
+    if(cp >= 66) return "かなり冷笑寄り。毒舌と観察眼が武器のタイプ。本気を出すのは恥ずかしいと感じているけど、内心では熱い人を羨ましく見ている。";
+    if(cp >= 49) return "どちらかといえば冷笑寄り。完全に冷め切ってるわけじゃないけど、本気を人前で出すのはちょっと恥ずかしい感じ。";
+    if(cp >= 33) return "ギリギリ冷笑系。熱笑の素質も十分あるのに、どこかブレーキをかけてしまうタイプ。";
+    if(cp >= 17) return "かなりニュートラルな冷笑系。知的で落ち着いた目線で物事を見ている。感情を出すのが苦手なだけで、本当は感じやすい人。";
+    return "超マイペースな冷笑系。熱量のある場にいても動じない鉄壁のペースを持っている。";
+  } else {
+    if(hp >= 83) return "純粋無垢な熱笑系。感動したら泣く、楽しかったら叫ぶ。そのエネルギーが周りを動かしてる。冷笑勢が「がんばっちゃってて草」と言いながら実は内心うらやましがってるの、気づいてる？";
+    if(hp >= 66) return "かなり熱笑寄り。応援上手で、共感力が高い。エモいものに弱くてすぐ全力になる。その素直さが武器だよ。";
+    if(hp >= 49) return "どちらかといえば熱笑寄り。「テンション上げすぎかな」って気にすることもあるけど、基本は素直に楽しめるいいタイプ。";
+    if(hp >= 33) return "ギリギリ熱笑系。まだ殻が残っているけど、火がついたら最強になれる素質がある。";
+    if(hp >= 17) return "こっそり熱笑系。外では静かでも、信頼できる人の前ではぽろっと熱い本音が出る。そのギャップが武器になる。";
+    return "天然熱笑系。本人は冷静のつもりが、気づいたら全力になってる。その温かさで人が自然と集まってくる。";
+  }
+}
+
+function showResult(){
+  document.getElementById('quiz-screen').classList.remove('active');
+  document.getElementById('result-screen').classList.add('active');
+  const {cp, hp} = calcScores();
+  const winner = cp >= hp ? 'cool' : 'hot';
+  const animal = winner === 'cool' ? getAnimal(cp, coolAnimals) : getAnimal(hp, hotAnimals);
+  const pct = winner === 'cool' ? cp : hp;
+
+  resultText = `私は「${animal.name}」タイプでした！冷笑度${cp}% vs 熱笑度${hp}% #冷笑vs熱笑診断`;
+
+  const card = document.getElementById('result-main-card');
+  card.className = `result-main-card ${winner}-result`;
+  const badge = document.getElementById('result-type-badge');
+  badge.className = `result-type-badge ${winner==='cool'?'cool-badge':'hot-badge'}`;
+  badge.textContent = winner === 'cool' ? '冷笑タイプ' : '熱笑タイプ';
+  document.getElementById('result-animal-svg').innerHTML = getAnimalSVG(animal.svgType, 120);
+  document.getElementById('result-pct').className = `result-pct ${winner}-pct`;
+  document.getElementById('result-pct').textContent = `${pct}%`;
+  document.getElementById('result-animal-name').textContent = animal.name;
+  document.getElementById('result-animal-desc').textContent = animal.desc;
+  document.getElementById('result-sub-scores').innerHTML = `
+    <div class="sub-score-card"><div class="sub-score-label">冷笑度</div><div class="sub-score-value" style="color:#534AB7">${cp}%</div></div>
+    <div class="sub-score-card"><div class="sub-score-label">熱笑度</div><div class="sub-score-value" style="color:#D4537E">${hp}%</div></div>`;
+  document.getElementById('result-comment').textContent = getResultComment(winner, cp, hp);
+
+  const chips = animal.traits.map(t=>`<span class="trait-chip">${t}</span>`).join('');
+  document.getElementById('result-detail-area').innerHTML = `
+    <div class="result-detail-card fade-up d3">
+      <div class="detail-card-title">🔍 あなたの特性</div>
+      <div class="trait-list">${chips}</div>
+    </div>
+    <div class="result-detail-card fade-up d4">
+      <div class="detail-card-title">💑 相性</div>
+      <div class="compat-row"><span class="compat-tag compat-good">◎ 相性いい</span><span>${animal.compat}</span></div>
+      <div class="compat-row"><span class="compat-tag compat-bad">△ 苦手</span><span>${animal.incomp}</span></div>
+    </div>
+    <div class="result-detail-card fade-up d4">
+      <div class="detail-card-title">💡 あなたへのアドバイス</div>
+      <div>${animal.advice}</div>
+    </div>`;
+}
+
+function shareX(){
+  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(resultText)}&url=${encodeURIComponent(location.href)}`,'_blank');
+}
+function shareLine(){
+  window.open(`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(location.href)}&text=${encodeURIComponent(resultText+' ')}`,'_blank');
+}
+function copyLink(){
+  const btn = document.getElementById('copy-btn');
+  navigator.clipboard ? navigator.clipboard.writeText(resultText+' '+location.href) : (() => {
+    const d=document.createElement('textarea'); d.value=resultText+' '+location.href;
+    document.body.appendChild(d); d.select(); document.execCommand('copy'); document.body.removeChild(d);
+  })();
+  btn.textContent='✅ コピーしました！';
+  setTimeout(()=>btn.textContent='🔗 リンクをコピー', 2000);
+}
+function resetQuiz(){
+  currentQ=0; answers=[]; shuffledChoices=[]; resultText='';
+  document.getElementById('result-screen').classList.remove('active');
+  document.getElementById('title-screen').classList.add('active');
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
